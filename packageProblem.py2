@@ -1,0 +1,81 @@
+#You want to send your friend a package with different things.
+#Each thing you put inside the package has such parameters as index number, weight and cost.
+#The package has a weight limit.
+#Your goal is to determine which things to put into the package so that the total weight is less than or equal to the package #limit and the total cost is as large as possible.
+
+You would prefer to send a package which weights less in case there is more than one package with the same price.
+
+import sys
+
+def readTestCases(fileName):
+    testCases = []
+    with open(fileName, 'r') as testCasesFile:
+        line = testCasesFile.readline()
+        while line != '':
+            i = line.index(':')
+            maxWeight = float(line[ :i - 1])
+            items = line[i + 2: ].split(' ')
+            numItems = len(items)
+            for i in range(numItems):
+                t = items[i]
+                index = int(t[t.index('(') + 1 : t.index(',')])
+                t = t[t.index(',') + 1: ]
+                weight = float(t[ :t.index(',')])
+                t = t[t.index(',') + 1: ]
+                cost = float(t[1 : t.index(')')])
+                items[i] = (index, weight, cost)
+
+            line = testCasesFile.readline()
+            testCases.append([maxWeight, items])
+
+    testCasesFile.close()
+    return testCases
+
+def totalWeight(items):
+    weight = 0
+    for item in items:
+        weight += item[1]
+    return weight
+
+def totalCost(items):
+    cost = 0
+    for item in items:
+        cost += item[2]
+    return cost
+
+def package(maxWeight, itemsPicked, itemsLeft, optimumList):
+    if totalWeight(itemsPicked) <= maxWeight:
+        if totalCost(itemsPicked) > totalCost(optimumList):
+            optimumList = itemsPicked
+        if totalCost(itemsPicked) == totalCost(optimumList):
+            if totalWeight(itemsPicked) < totalWeight(optimumList):
+                optimumList = itemsPicked
+
+    if itemsLeft == []:
+        return optimumList
+
+    optimumList = package(maxWeight, itemsPicked, itemsLeft[1: ], optimumList)  
+    optimumList = package(maxWeight, itemsPicked + [itemsLeft[0]], itemsLeft[1: ], optimumList)      
+    
+    return optimumList
+
+def indexes(items):
+    s = ''
+    for item in items:
+        s += str(item[0]) + ','
+    if len(s)==0:
+        return "-"
+    else:
+        return s[ :-1]
+
+def main():
+    args = sys.argv
+    fileName = args[1]
+    testCases = readTestCases(fileName)
+    for testCase in testCases:
+        maxWeight = testCase[0]
+        items = testCase[1]
+        selectedItems = package(maxWeight, [],items,[])
+        print indexes(selectedItems)
+
+main()
